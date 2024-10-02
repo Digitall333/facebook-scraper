@@ -1,7 +1,7 @@
 import itertools
 import json
 import time
-
+import random
 import demjson3 as demjson
 from demjson3 import JSONDecodeError
 import logging
@@ -1403,6 +1403,7 @@ class PostExtractor:
             more_url = self.options.get("comment_start_url")
 
         while more_url and len(comments) <= limit:
+            time.sleep(random.uniform(2, 6))
             if request_url_callback:
                 request_url_callback(utils.urljoin(FB_MOBILE_BASE_URL, more_url))
             if more_url in visited_urls:

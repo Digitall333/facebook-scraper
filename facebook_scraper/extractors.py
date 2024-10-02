@@ -528,7 +528,7 @@ class PostExtractor:
             post_match = self.post_url_regex.match(href)
             video_post_match = self.video_post_url_regex.match(href)
 
-            if post_match:
+            if post_match or 'permalink' in href:
                 path = utils.filter_query_params(href, whitelist=query_params)
                 break
 
@@ -1157,6 +1157,9 @@ class PostExtractor:
     def parse_comment(self, comment):
         comment_id = comment.attrs.get("id")
 
+        if comment_id is None:
+            return None
+
         try:
             profile_picture = comment.find(".profpic.img", first=True)
             name = profile_picture.attrs.get("alt") or profile_picture.attrs.get("aria-label")
@@ -1315,6 +1318,9 @@ class PostExtractor:
     def extract_comment_with_replies(self, comment):
         try:
             result = self.parse_comment(comment)
+            if not result:
+                return result
+            
             result["replies"] = [
                 self.parse_comment(reply)
                 for reply in comment.find("div[data-sigil='comment inline-reply']")
@@ -1359,10 +1365,10 @@ class PostExtractor:
             if result:
                 yield result
 
-        more_selector = f"div#see_next_{self.post.get('post_id')} a"
+        more_selector = f"div[id^='see_next'] a"
         more = elem.find(more_selector, first=True)
         if not more:
-            more_selector = f"div#see_prev_{self.post.get('post_id')} a"
+            more_selector = f"div[id^='see_prev'] a"
             more = elem.find(more_selector, first=True)
 
         # Comment limiting and progress
@@ -1407,7 +1413,10 @@ class PostExtractor:
             else:
                 logger.debug(f"Fetching {more_url}")
             try:
-                response = self.request(more_url)
+                r_url = more_url
+                if not r_url.startswith("https://mbasic.facebook.com"):
+                    r_url = "https://mbasic.facebook.com" + more_url
+                response = self.request(r_url)
             except exceptions.TemporarilyBanned:
                 raise
             except Exception as e:

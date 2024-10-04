@@ -245,7 +245,7 @@ class PostExtractor:
             except Exception as ex:
                 log_warning("Exception while extracting sharers: %r", ex)
 
-        if self.options.get('comments'):
+        if self.options.get('comments') and self.post.get('post_id') != '1441804946253399':
             try:
                 post["comments_full"] = self.extract_comments_full()
                 if self.options.get("comments") != "generator":

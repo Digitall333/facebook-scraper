@@ -80,6 +80,7 @@ class PostExtractor:
     image_regex_lq = re.compile(r"url\('(.+)'\)")
     video_thumbnail_regex = re.compile(r"background: url\('(.+)'\)")
     post_url_regex = re.compile(r'/story.php\?story_fbid=')
+    group_post_regex = re.compile(r'^https?:\/\/mbasic\.facebook\.com\/groups\/[^\/]+\/permalink\/\d+\/?(?:\?.*)?$')
     video_post_url_regex = re.compile(r'/.+/videos/.+/(.+)/.+')
     video_id_regex = re.compile(r'{&quot;videoID&quot;:&quot;([0-9]+)&quot;')
 
@@ -526,9 +527,10 @@ class PostExtractor:
             href = element.attrs.get('href', '')
 
             post_match = self.post_url_regex.match(href)
+            group_post_match = self.group_post_regex.match(href)
             video_post_match = self.video_post_url_regex.match(href)
 
-            if post_match or 'permalink' in href:
+            if post_match or group_post_match:
                 path = utils.filter_query_params(href, whitelist=query_params)
                 break
 
